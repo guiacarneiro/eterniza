@@ -1,0 +1,8 @@
+{
+  "api_secret": "555xulispa555",
+  "db_host": "localhost",
+  "db_user": "visual",
+  "db_password": "visualse",
+  "db_name": "eterniza",
+  "db_port": "3306"
+}
