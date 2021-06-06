@@ -36,6 +36,26 @@ func GetPropriedade(propriedade string) string {
 	return viper.GetString(propriedade)
 }
 
+//GetPropriedade - busca propriedade no arquivo de configuracoes
+func GetPropriedadeDefault(propriedade, defaultVal string) (val string) {
+	once.Do(func() {
+		viper.SetConfigName(nomeArquivoConfiguracao)
+		viper.AddConfigPath("./")
+		viper.AddConfigPath("./config/")
+
+		errConfig := viper.ReadInConfig()
+		if errConfig != nil {
+			logger.LogError.Println(fmt.Errorf("erro ao buscar arquivo de configurações: %s", errConfig))
+			panic(fmt.Errorf("erro ao buscar arquivo de configurações: %s", errConfig))
+		}
+	})
+	val = viper.GetString(propriedade)
+	if val == "" {
+		val = defaultVal
+	}
+	return
+}
+
 //GetPropriedadeInt - busca propriedade no arquivo de configuracoes
 func GetPropriedadeInt(propriedade string) int {
 	once.Do(func() {

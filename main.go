@@ -3,6 +3,7 @@ package main
 import (
 	"eterniza/api"
 	"eterniza/api/controller"
+	"eterniza/config"
 	"fmt"
 	"github.com/gorilla/mux"
 	"log"
@@ -21,12 +22,13 @@ func main() {
 
 	//Users routes
 	Router.HandleFunc("/users", api.SetMiddlewareJSON(controller.CreateUser)).Methods("POST")
-	Router.HandleFunc("/users", api.SetMiddlewareJSON(controller.GetUsers)).Methods("GET")
-	Router.HandleFunc("/users/{id}", api.SetMiddlewareJSON(controller.GetUser)).Methods("GET")
+	Router.HandleFunc("/users", api.SetMiddlewareJSON(api.SetMiddlewareAuthentication(controller.GetUsers))).Methods("GET")
+	Router.HandleFunc("/users/{id}", api.SetMiddlewareJSON(api.SetMiddlewareAuthentication(controller.GetUser))).Methods("GET")
 	Router.HandleFunc("/users/{id}", api.SetMiddlewareJSON(api.SetMiddlewareAuthentication(controller.UpdateUser))).Methods("PUT")
 	Router.HandleFunc("/users/{id}", api.SetMiddlewareAuthentication(controller.DeleteUser)).Methods("DELETE")
-	fmt.Println("Listening to port 8080")
-	log.Fatal(http.ListenAndServe(":8080", Router))
+	server := config.GetPropriedadeDefault("server", ":8080")
+	fmt.Println("Listening to " + server)
+	log.Fatal(http.ListenAndServe(server, Router))
 	//database.DB.Save(&producao.MateriaPrima{
 	//	Label: "Banho",
 	//	Unity: producao.Weight,
