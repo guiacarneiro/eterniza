@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"eterniza/api"
+	"github.com/guiacarneiro/eterniza/api"
 	"net/http"
 )
 

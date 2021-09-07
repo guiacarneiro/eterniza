@@ -2,7 +2,7 @@
   "api_secret": "555xulispa555",
   "db_host": "localhost",
   "db_user": "root",
-  "db_password": "eterniza",
+  "db_password": "visualse",
   "db_name": "eterniza",
   "db_port": "3306",
   "server_port": "8080"

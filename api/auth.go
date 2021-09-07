@@ -2,8 +2,8 @@ package api
 
 import (
 	"encoding/json"
-	"eterniza/config"
 	"fmt"
+	"github.com/guiacarneiro/eterniza/config"
 	"log"
 	"net/http"
 	"strconv"
@@ -13,14 +13,13 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
-func CreateToken(user_id uint) (string, error) {
+func CreateToken(user_id uint, user_name string) (string, error) {
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
 	claims["user_id"] = user_id
 	claims["exp"] = time.Now().Add(time.Hour * 1).Unix() //Token expires after 1 hour
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(config.GetPropriedade("api_secret")))
-
 }
 
 func TokenValid(r *http.Request) error {

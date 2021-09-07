@@ -6,31 +6,29 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/guiacarneiro/eterniza/api"
-	"github.com/guiacarneiro/eterniza/database"
+	"github.com/guiacarneiro/eterniza/api/producao"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 )
 
-func CreateUser(w http.ResponseWriter, r *http.Request) {
+func CreateMateriaPrima(w http.ResponseWriter, r *http.Request) {
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		api.ERROR(w, http.StatusUnprocessableEntity, err)
 	}
-	user := api.User{}
-	err = json.Unmarshal(body, &user)
+	materiaPrima := producao.MateriaPrima{}
+	err = json.Unmarshal(body, &materiaPrima)
 	if err != nil {
 		api.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
 	}
-	user.Prepare()
-	err = user.Validate("")
 	if err != nil {
 		api.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
 	}
-	userCreated, err := user.SaveUser(database.DB)
+	materiaPrima.Save()
 
 	if err != nil {
 
@@ -39,23 +37,21 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		api.ERROR(w, http.StatusInternalServerError, formattedError)
 		return
 	}
-	w.Header().Set("Location", fmt.Sprintf("%s%s/%d", r.Host, r.RequestURI, userCreated.ID))
-	api.JSON(w, http.StatusCreated, userCreated)
+	w.Header().Set("Location", fmt.Sprintf("%s%s/%d", r.Host, r.RequestURI, materiaPrima.ID))
+	api.JSON(w, http.StatusCreated, materiaPrima)
 }
 
-func GetUsers(w http.ResponseWriter, r *http.Request) {
+func GetMateriaPrimas(w http.ResponseWriter, r *http.Request) {
 
-	user := api.User{}
-
-	users, err := user.FindAllUsers(database.DB)
+	listaMateriaPrima, err := producao.ListaMateriaPrima(0, 100)
 	if err != nil {
 		api.ERROR(w, http.StatusInternalServerError, err)
 		return
 	}
-	api.JSON(w, http.StatusOK, users)
+	api.JSON(w, http.StatusOK, listaMateriaPrima)
 }
 
-func GetUser(w http.ResponseWriter, r *http.Request) {
+func GetMateriaPrima(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	uid, err := strconv.ParseUint(vars["id"], 10, 32)
@@ -63,16 +59,15 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		api.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
-	user := api.User{}
-	userGotten, err := user.FindUserByID(database.DB, uint32(uid))
+	materiaPrima, err := producao.FindMateriaPrimaById(uint(uid))
 	if err != nil {
 		api.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
-	api.JSON(w, http.StatusOK, userGotten)
+	api.JSON(w, http.StatusOK, materiaPrima)
 }
 
-func UpdateUser(w http.ResponseWriter, r *http.Request) {
+func UpdateMateriaPrima(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	uid, err := strconv.ParseUint(vars["id"], 10, 32)
@@ -85,8 +80,9 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		api.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
 	}
-	user := api.User{}
-	err = json.Unmarshal(body, &user)
+	materiaPrima := producao.MateriaPrima{}
+	materiaPrima.ID = uint(uid)
+	err = json.Unmarshal(body, &materiaPrima)
 	if err != nil {
 		api.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
@@ -100,26 +96,25 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		api.ERROR(w, http.StatusUnauthorized, errors.New(http.StatusText(http.StatusUnauthorized)))
 		return
 	}
-	user.Prepare()
-	err = user.Validate("update")
-	if err != nil {
-		api.ERROR(w, http.StatusUnprocessableEntity, err)
-		return
-	}
-	updatedUser, err := user.UpdateAUser(database.DB, uint32(uid))
+	//materiaPrima.Prepare()
+	//err = materiaPrima.Validate("update")
+	//if err != nil {
+	//	api.ERROR(w, http.StatusUnprocessableEntity, err)
+	//	return
+	//}
+
+	materiaPrimaSalva, err := materiaPrima.Save()
 	if err != nil {
 		formattedError := api.FormatError(err.Error())
 		api.ERROR(w, http.StatusInternalServerError, formattedError)
 		return
 	}
-	api.JSON(w, http.StatusOK, updatedUser)
+	api.JSON(w, http.StatusOK, materiaPrimaSalva)
 }
 
-func DeleteUser(w http.ResponseWriter, r *http.Request) {
+func DeleteMateriaPrima(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
-
-	user := api.User{}
 
 	uid, err := strconv.ParseUint(vars["id"], 10, 32)
 	if err != nil {
@@ -135,7 +130,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		api.ERROR(w, http.StatusUnauthorized, errors.New(http.StatusText(http.StatusUnauthorized)))
 		return
 	}
-	_, err = user.DeleteAUser(database.DB, uint32(uid))
+	_, err = producao.DeleteMateriaPrimaById(uint(uid))
 	if err != nil {
 		api.ERROR(w, http.StatusInternalServerError, err)
 		return

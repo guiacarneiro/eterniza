@@ -2,8 +2,8 @@ package controller
 
 import (
 	"encoding/json"
-	"eterniza/api"
-	"eterniza/database"
+	"github.com/guiacarneiro/eterniza/api"
+	"github.com/guiacarneiro/eterniza/database"
 	"golang.org/x/crypto/bcrypt"
 	"io/ioutil"
 	"net/http"
@@ -34,7 +34,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		api.ERROR(w, http.StatusUnprocessableEntity, formattedError)
 		return
 	}
-	api.JSON(w, http.StatusOK, token)
+	api.JSON(w, http.StatusOK, api.LoginResponse{token})
 }
 
 func SignIn(email, password string) (string, error) {
@@ -51,5 +51,5 @@ func SignIn(email, password string) (string, error) {
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
 		return "", err
 	}
-	return api.CreateToken(user.ID)
+	return api.CreateToken(user.ID, user.Nickname)
 }

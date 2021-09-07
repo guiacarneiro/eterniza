@@ -1,16 +1,22 @@
 package producao
 
-import "gorm.io/gorm"
+import (
+	"github.com/guiacarneiro/eterniza/database"
+	"gorm.io/gorm"
+)
 
 // Componente ...
 type Componente struct {
 	gorm.Model
 	Quantidade     float64 `json:"quantidade"`
-	MateriaPrimaID int
-	ProdutoID      int
-	MateriaPrima   MateriaPrima
+	MateriaPrimaID uint
+	MateriaPrima   *MateriaPrima
+	ProdutoID      uint
 }
 
 func init() {
-	db.AutoMigrate(&Componente{})
+	err := database.DB.AutoMigrate(&Componente{})
+	if err != nil {
+		panic("Erro criando tabela")
+	}
 }

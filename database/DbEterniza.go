@@ -1,8 +1,8 @@
 package database
 
 import (
-	"eterniza/config"
 	"fmt"
+	"github.com/guiacarneiro/eterniza/config"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )

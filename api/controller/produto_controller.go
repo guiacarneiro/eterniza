@@ -6,31 +6,30 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/guiacarneiro/eterniza/api"
+	"github.com/guiacarneiro/eterniza/api/producao"
 	"github.com/guiacarneiro/eterniza/database"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 )
 
-func CreateUser(w http.ResponseWriter, r *http.Request) {
+func CreateProduto(w http.ResponseWriter, r *http.Request) {
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		api.ERROR(w, http.StatusUnprocessableEntity, err)
 	}
-	user := api.User{}
+	user := producao.Produto{}
 	err = json.Unmarshal(body, &user)
 	if err != nil {
 		api.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
 	}
-	user.Prepare()
-	err = user.Validate("")
 	if err != nil {
 		api.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
 	}
-	userCreated, err := user.SaveUser(database.DB)
+	userCreated, err := user.Save(database.DB)
 
 	if err != nil {
 
@@ -43,11 +42,11 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	api.JSON(w, http.StatusCreated, userCreated)
 }
 
-func GetUsers(w http.ResponseWriter, r *http.Request) {
+func GetProdutos(w http.ResponseWriter, r *http.Request) {
 
-	user := api.User{}
+	user := producao.Produto{}
 
-	users, err := user.FindAllUsers(database.DB)
+	users, err := user.FindAllProdutos(database.DB)
 	if err != nil {
 		api.ERROR(w, http.StatusInternalServerError, err)
 		return
@@ -55,7 +54,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	api.JSON(w, http.StatusOK, users)
 }
 
-func GetUser(w http.ResponseWriter, r *http.Request) {
+func GetProduto(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	uid, err := strconv.ParseUint(vars["id"], 10, 32)
@@ -63,8 +62,8 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		api.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
-	user := api.User{}
-	userGotten, err := user.FindUserByID(database.DB, uint32(uid))
+	user := producao.Produto{}
+	userGotten, err := user.FindProdutoByID(database.DB, uint32(uid))
 	if err != nil {
 		api.ERROR(w, http.StatusBadRequest, err)
 		return
@@ -72,7 +71,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	api.JSON(w, http.StatusOK, userGotten)
 }
 
-func UpdateUser(w http.ResponseWriter, r *http.Request) {
+func UpdateProduto(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	uid, err := strconv.ParseUint(vars["id"], 10, 32)
@@ -85,8 +84,9 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		api.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
 	}
-	user := api.User{}
-	err = json.Unmarshal(body, &user)
+	produto := producao.Produto{}
+	produto.ID = uint(uid)
+	err = json.Unmarshal(body, &produto)
 	if err != nil {
 		api.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
@@ -100,26 +100,26 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		api.ERROR(w, http.StatusUnauthorized, errors.New(http.StatusText(http.StatusUnauthorized)))
 		return
 	}
-	user.Prepare()
-	err = user.Validate("update")
+	produto.Prepare()
+	err = produto.Validate("update")
 	if err != nil {
 		api.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
 	}
-	updatedUser, err := user.UpdateAUser(database.DB, uint32(uid))
+	updatedProduto, err := produto.Save(database.DB)
 	if err != nil {
 		formattedError := api.FormatError(err.Error())
 		api.ERROR(w, http.StatusInternalServerError, formattedError)
 		return
 	}
-	api.JSON(w, http.StatusOK, updatedUser)
+	api.JSON(w, http.StatusOK, updatedProduto)
 }
 
-func DeleteUser(w http.ResponseWriter, r *http.Request) {
+func DeleteProduto(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
-	user := api.User{}
+	user := producao.Produto{}
 
 	uid, err := strconv.ParseUint(vars["id"], 10, 32)
 	if err != nil {
@@ -135,7 +135,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		api.ERROR(w, http.StatusUnauthorized, errors.New(http.StatusText(http.StatusUnauthorized)))
 		return
 	}
-	_, err = user.DeleteAUser(database.DB, uint32(uid))
+	_, err = user.DeleteProduto(database.DB, uint32(uid))
 	if err != nil {
 		api.ERROR(w, http.StatusInternalServerError, err)
 		return

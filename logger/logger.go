@@ -52,7 +52,7 @@ var (
 func init() {
 	logLevel = Debug
 	caminhoArquivoLog = "./log"
-	nomeArquivoLog = "eterniza.log"
+	nomeArquivoLog = "eterniza"
 	versao = 1
 	var _, err = os.Stat(caminhoArquivoLog)
 	if os.IsNotExist(err) {

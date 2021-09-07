@@ -2,7 +2,7 @@ package api
 
 import (
 	"errors"
-	"eterniza/database"
+	"github.com/guiacarneiro/eterniza/database"
 	"html"
 	"log"
 	"strings"
@@ -15,9 +15,13 @@ import (
 
 type User struct {
 	gorm.Model
-	Nickname string `gorm:"size:255;not null;unique" json:"nickname"`
+	Nickname string `gorm:"size:255;not null;unique" json:"name"`
 	Email    string `gorm:"size:100;not null;unique" json:"email"`
 	Password string `gorm:"size:100;not null;" json:"password"`
+}
+
+type LoginResponse struct {
+	Token string `json:"token"`
 }
 
 func init() {
@@ -53,28 +57,28 @@ func (u *User) Validate(action string) error {
 	switch strings.ToLower(action) {
 	case "update":
 		if u.Nickname == "" {
-			return errors.New("Required Nickname")
+			return errors.New("Nome obrigatório")
 		}
 		if u.Password == "" {
-			return errors.New("Required Password")
+			return errors.New("Senha obrigatória")
 		}
 		if u.Email == "" {
-			return errors.New("Required Email")
+			return errors.New("Email obrigatório")
 		}
 		if err := checkmail.ValidateFormat(u.Email); err != nil {
-			return errors.New("Invalid Email")
+			return errors.New("Email inválido")
 		}
 
 		return nil
 	case "login":
 		if u.Password == "" {
-			return errors.New("Required Password")
+			return errors.New("Senha obrigatória")
 		}
 		if u.Email == "" {
-			return errors.New("Required Email")
+			return errors.New("Email obrigatório")
 		}
 		if err := checkmail.ValidateFormat(u.Email); err != nil {
-			return errors.New("Invalid Email")
+			return errors.New("Email inválido")
 		}
 		return nil
 
@@ -83,13 +87,13 @@ func (u *User) Validate(action string) error {
 			return errors.New("Required Nickname")
 		}
 		if u.Password == "" {
-			return errors.New("Required Password")
+			return errors.New("Senha obrigatória")
 		}
 		if u.Email == "" {
-			return errors.New("Required Email")
+			return errors.New("Email obrigatório")
 		}
 		if err := checkmail.ValidateFormat(u.Email); err != nil {
-			return errors.New("Invalid Email")
+			return errors.New("Email inválido")
 		}
 		return nil
 	}
@@ -122,7 +126,7 @@ func (u *User) FindUserByID(db *gorm.DB, uid uint32) (*User, error) {
 		return &User{}, err
 	}
 	if err == gorm.ErrRecordNotFound {
-		return &User{}, errors.New("User Not Found")
+		return &User{}, errors.New("Usuário não encontrado")
 	}
 	return u, err
 }

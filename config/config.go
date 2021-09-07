@@ -1,8 +1,8 @@
 package config
 
 import (
-	"eterniza/logger"
 	"fmt"
+	"github.com/guiacarneiro/eterniza/logger"
 	"sync"
 
 	"github.com/spf13/viper"
