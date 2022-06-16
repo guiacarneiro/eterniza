@@ -2,89 +2,69 @@ package config
 
 import (
 	"fmt"
-	"github.com/guiacarneiro/eterniza/logger"
-	"sync"
-
-	"github.com/spf13/viper"
+	"github.com/guiacarneiro/eterniza/config/viper"
+	"os"
+	"path/filepath"
 )
 
 var (
-	//Versao - versao da aplicacao
-	Versao                  = 0
+	// Versao - versao da aplicacao
+	Versao                  = ""
 	nomeArquivoConfiguracao string
-	once                    sync.Once
 )
 
-func init() {
-	nomeArquivoConfiguracao = "eterniza_config"
-	Versao = 1
+func GetConfigPath() (string, error) {
+	fullexecpath, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+
+	dir, _ := filepath.Split(fullexecpath)
+	// ext := filepath.Ext(execname)
+	// name := execname[:len(execname)-len(ext)]
+
+	return dir, nil
 }
 
-//GetPropriedade - busca propriedade no arquivo de configuracoes
-func GetPropriedade(propriedade string) string {
-	once.Do(func() {
-		viper.SetConfigName(nomeArquivoConfiguracao)
-		viper.AddConfigPath("./")
-		viper.AddConfigPath("./config/")
+func init() {
+	Inicializa("eterniza", "0.0.1")
+}
 
-		errConfig := viper.ReadInConfig()
-		if errConfig != nil {
-			logger.LogError.Println(fmt.Errorf("erro ao buscar arquivo de configurações: %s", errConfig))
-			panic(fmt.Errorf("erro ao buscar arquivo de configurações: %s", errConfig))
-		}
-	})
+// Inicializa - inicializa configuracoes
+func Inicializa(nomeArquivoConfig string, versao string) {
+	nomeArquivoConfiguracao = nomeArquivoConfig
+	Versao = versao
+	viper.SetConfigName(nomeArquivoConfiguracao)
+	path, err := GetConfigPath()
+	if err == nil {
+		viper.AddConfigPath(path)
+	}
+	viper.AddConfigPath("./")
+	viper.AddConfigPath("./config/")
+
+	errConfig := viper.ReadInConfig()
+	if errConfig != nil {
+		fmt.Printf("erro ao buscar arquivo de configurações: %s\n", errConfig)
+	}
+}
+
+// GetPropriedade - busca propriedade no arquivo de configuracoes
+func GetPropriedade(propriedade string) string {
 	return viper.GetString(propriedade)
 }
 
-//GetPropriedade - busca propriedade no arquivo de configuracoes
-func GetPropriedadeDefault(propriedade, defaultVal string) (val string) {
-	once.Do(func() {
-		viper.SetConfigName(nomeArquivoConfiguracao)
-		viper.AddConfigPath("./")
-		viper.AddConfigPath("./config/")
-
-		errConfig := viper.ReadInConfig()
-		if errConfig != nil {
-			logger.LogError.Println(fmt.Errorf("erro ao buscar arquivo de configurações: %s", errConfig))
-			panic(fmt.Errorf("erro ao buscar arquivo de configurações: %s", errConfig))
-		}
-	})
-	val = viper.GetString(propriedade)
-	if val == "" {
-		val = defaultVal
-	}
-	return
-}
-
-//GetPropriedadeInt - busca propriedade no arquivo de configuracoes
+// GetPropriedadeInt - busca propriedade no arquivo de configuracoes
 func GetPropriedadeInt(propriedade string) int {
-	once.Do(func() {
-		viper.SetConfigName(nomeArquivoConfiguracao)
-		viper.AddConfigPath("./")
-		viper.AddConfigPath("./config/")
-
-		errConfig := viper.ReadInConfig()
-		if errConfig != nil {
-			logger.LogError.Println(fmt.Errorf("erro ao buscar arquivo de configurações: %s", errConfig))
-			panic(fmt.Errorf("erro ao buscar arquivo de configurações: %s", errConfig))
-		}
-	})
 	return viper.GetInt(propriedade)
 }
 
-//UnmarshalProperties - busca propriedade no arquivo de configuracoes
+// UnmarshalProperties - busca propriedade no arquivo de configuracoes
 func UnmarshalProperties(obj interface{}) error {
-	once.Do(func() {
-		viper.SetConfigName(nomeArquivoConfiguracao)
-		viper.AddConfigPath("./")
-		viper.AddConfigPath("./config/")
-
-		errConfig := viper.ReadInConfig()
-		if errConfig != nil {
-			logger.LogError.Println(fmt.Errorf("erro ao buscar arquivo de configurações: %s", errConfig))
-			panic(fmt.Errorf("erro ao buscar arquivo de configurações: %s", errConfig))
-		}
-	})
 	err := viper.Unmarshal(obj)
 	return err
+}
+
+// GetPropriedadeBool - busca propriedade no arquivo de configuracoes
+func GetPropriedadeBool(propriedade string) bool {
+	return viper.GetBool(propriedade)
 }

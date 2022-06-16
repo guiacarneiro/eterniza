@@ -1,4 +1,4 @@
-package producao
+package model
 
 import (
 	"github.com/guiacarneiro/eterniza/database"
@@ -12,8 +12,5 @@ type TabelaPreco struct {
 }
 
 func init() {
-	err := database.DB.AutoMigrate(&TabelaPreco{})
-	if err != nil {
-		panic("Erro criando tabela")
-	}
+	database.Migrate(&TabelaPreco{})
 }

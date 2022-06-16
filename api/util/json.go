@@ -1,8 +1,9 @@
-package api
+package util
 
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
@@ -14,14 +15,16 @@ func JSON(w http.ResponseWriter, statusCode int, data interface{}) {
 	}
 }
 
-func ERROR(w http.ResponseWriter, statusCode int, err error) {
+func ERROR(c *gin.Context, statusCode int, err error) {
 	if err != nil {
-		JSON(w, statusCode, struct {
-			Error string `json:"error"`
+		c.JSON(statusCode, struct {
+			Mensagem string `json:"message"`
+			Success  bool   `json:"success"`
 		}{
-			Error: err.Error(),
+			Mensagem: err.Error(),
+			Success:  false,
 		})
 		return
 	}
-	JSON(w, http.StatusBadRequest, nil)
+	c.JSON(http.StatusBadRequest, nil)
 }

@@ -1,4 +1,4 @@
-package api
+package model
 
 import (
 	"errors"
@@ -15,9 +15,10 @@ import (
 
 type User struct {
 	gorm.Model
-	Nickname string `gorm:"size:255;not null;unique" json:"name"`
-	Email    string `gorm:"size:100;not null;unique" json:"email"`
-	Password string `gorm:"size:100;not null;" json:"password"`
+	Nickname string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Aprovado bool   `json:"aprovado"`
 }
 
 type LoginResponse struct {
@@ -25,7 +26,7 @@ type LoginResponse struct {
 }
 
 func init() {
-	database.DB.AutoMigrate(&User{})
+	database.Migrate(&User{})
 }
 
 func Hash(password string) ([]byte, error) {

@@ -1,4 +1,4 @@
-package producao
+package model
 
 import (
 	"errors"
@@ -20,10 +20,7 @@ type Produto struct {
 }
 
 func init() {
-	err := database.DB.AutoMigrate(&Produto{})
-	if err != nil {
-		panic("Erro criando tabela")
-	}
+	database.Migrate(&Produto{})
 }
 
 func (p *Produto) BeforeSave(tx *gorm.DB) error {

@@ -1,4 +1,4 @@
-package producao
+package model
 
 import (
 	"github.com/guiacarneiro/eterniza/database"
@@ -15,8 +15,5 @@ type Componente struct {
 }
 
 func init() {
-	err := database.DB.AutoMigrate(&Componente{})
-	if err != nil {
-		panic("Erro criando tabela")
-	}
+	database.Migrate(&Componente{})
 }

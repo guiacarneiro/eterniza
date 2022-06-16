@@ -1,4 +1,4 @@
-package producao
+package model
 
 import (
 	"github.com/guiacarneiro/eterniza/database"
@@ -35,16 +35,13 @@ type MateriaPrima struct {
 }
 
 func init() {
-	err := database.DB.AutoMigrate(&MateriaPrima{})
-	if err != nil {
-		panic("Erro criando tabela")
-	}
+	database.Migrate(&MateriaPrima{})
 }
 
 func ListaMateriaPrima(offset int, qte int) (*[]MateriaPrima, error) {
 	var err error
 	var result []MateriaPrima
-	err = database.DB.Model(&MateriaPrima{}).Offset(offset).Limit(qte).Find(&result).Error
+	err = database.Database.Transaction.Model(&MateriaPrima{}).Offset(offset).Limit(qte).Find(&result).Error
 	if err != nil {
 		return &[]MateriaPrima{}, err
 	}
@@ -52,7 +49,7 @@ func ListaMateriaPrima(offset int, qte int) (*[]MateriaPrima, error) {
 }
 
 func (a *MateriaPrima) Save() (*MateriaPrima, error) {
-	err := database.DB.Clauses(clause.OnConflict{
+	err := database.Database.Transaction.Clauses(clause.OnConflict{
 		UpdateAll: true,
 	}).Create(&a).Error
 	if err != nil {
@@ -64,7 +61,7 @@ func (a *MateriaPrima) Save() (*MateriaPrima, error) {
 func FindMateriaPrimaById(id uint) (*MateriaPrima, error) {
 	var err error
 	var result MateriaPrima
-	err = database.DB.Model(&MateriaPrima{}).First(&result, id).Error
+	err = database.Database.Transaction.Model(&MateriaPrima{}).First(&result, id).Error
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +71,7 @@ func FindMateriaPrimaById(id uint) (*MateriaPrima, error) {
 func DeleteMateriaPrimaById(id uint) (*MateriaPrima, error) {
 	var err error
 	var result MateriaPrima
-	err = database.DB.Model(&MateriaPrima{}).Delete(&result, id).Error
+	err = database.Database.Transaction.Model(&MateriaPrima{}).Delete(&result, id).Error
 	if err != nil {
 		return nil, err
 	}
