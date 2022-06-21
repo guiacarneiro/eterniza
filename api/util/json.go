@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/guiacarneiro/eterniza/api/response"
 	"net/http"
 )
 
@@ -17,12 +18,9 @@ func JSON(w http.ResponseWriter, statusCode int, data interface{}) {
 
 func ERROR(c *gin.Context, statusCode int, err error) {
 	if err != nil {
-		c.JSON(statusCode, struct {
-			Mensagem string `json:"message"`
-			Success  bool   `json:"success"`
-		}{
-			Mensagem: err.Error(),
-			Success:  false,
+		c.JSON(statusCode, response.Basic{
+			Success: false,
+			Message: err.Error(),
 		})
 		return
 	}

@@ -37,7 +37,7 @@ func ProcessaAPI() *gin.Engine {
 	gin.DisableConsoleColor()
 	gin.SetMode(gin.ReleaseMode)
 	ginrouter := gin.New()
-	ginrouter.Use(gin.Recovery(), util.CORSMiddleware())
+	ginrouter.Use(gin.Recovery(), util.CORSMiddleware(), util.TransactionMiddleware())
 
 	apiV1 := ginrouter.Group("/api/v1")
 
@@ -47,7 +47,7 @@ func ProcessaAPI() *gin.Engine {
 	apiV1.POST("/echo", Echo)
 
 	// User route
-	//apiV1.POST("/user", util.UserAuthenticationMiddleware(), controller.CreateUser)
+	apiV1.POST("/user", controller.CreateUser)
 	//apiV1.GET("/user", util.UserAuthenticationMiddleware(), controller.GetUsers)
 	//apiV1.GET("/user/:id", util.UserAuthenticationMiddleware(), controller.GetUser)
 	//apiV1.PUT("/user/:id", util.UserAuthenticationMiddleware(), controller.UpdateUser)

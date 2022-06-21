@@ -2,6 +2,7 @@ package util
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/guiacarneiro/eterniza/database"
 	"github.com/guiacarneiro/eterniza/logger"
 	"net/http"
 	"time"
@@ -82,5 +83,14 @@ func NoCacheMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Cache-Control", "no-cache")
 		c.Next()
+	}
+}
+
+func TransactionMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if database.CriaConexaoBancoRaw() == nil {
+			defer database.FechaConexaoBancoRaw()
+			c.Next()
+		}
 	}
 }

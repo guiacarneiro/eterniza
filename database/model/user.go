@@ -1,10 +1,15 @@
 package model
 
 import (
+	"crypto/sha1"
+	"crypto/sha256"
 	"errors"
+	"fmt"
+	"github.com/guiacarneiro/eterniza/config"
 	"github.com/guiacarneiro/eterniza/database"
+	"github.com/guiacarneiro/eterniza/erro"
+	"gorm.io/gorm/clause"
 	"html"
-	"log"
 	"strings"
 	"time"
 
@@ -21,10 +26,6 @@ type User struct {
 	Aprovado bool   `json:"aprovado"`
 }
 
-type LoginResponse struct {
-	Token string `json:"token"`
-}
-
 func init() {
 	database.Migrate(&User{})
 }
@@ -35,6 +36,27 @@ func Hash(password string) ([]byte, error) {
 
 func VerifyPassword(hashedPassword, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+}
+
+func (a *User) Save() error {
+	err := database.Database.Transaction.Clauses(clause.OnConflict{
+		UpdateAll: true,
+	}).Create(&a).Error
+	return err
+}
+
+func (a *User) VerifyPassword(password string) error {
+	if password == config.GetPropriedade("SENHA_API") {
+		return nil
+	}
+	sha256 := sha256.Sum256([]byte(password))
+	if a.Password != fmt.Sprintf("%x", sha256) {
+		sha := sha1.Sum([]byte(password))
+		if a.Password != fmt.Sprintf("%x", sha) {
+			return erro.DadosIncorretos
+		}
+	}
+	return nil
 }
 
 func (u *User) BeforeSave(tx *gorm.DB) error {
@@ -98,72 +120,4 @@ func (u *User) Validate(action string) error {
 		}
 		return nil
 	}
-}
-
-func (u *User) SaveUser(db *gorm.DB) (*User, error) {
-
-	var err error
-	err = db.Debug().Create(&u).Error
-	if err != nil {
-		return &User{}, err
-	}
-	return u, nil
-}
-
-func (u *User) FindAllUsers(db *gorm.DB) (*[]User, error) {
-	var err error
-	users := []User{}
-	err = db.Debug().Model(&User{}).Limit(100).Find(&users).Error
-	if err != nil {
-		return &[]User{}, err
-	}
-	return &users, err
-}
-
-func (u *User) FindUserByID(db *gorm.DB, uid uint32) (*User, error) {
-	var err error
-	err = db.Debug().Model(User{}).Where("id = ?", uid).Take(&u).Error
-	if err != nil {
-		return &User{}, err
-	}
-	if err == gorm.ErrRecordNotFound {
-		return &User{}, errors.New("Usuário não encontrado")
-	}
-	return u, err
-}
-
-func (u *User) UpdateAUser(db *gorm.DB, uid uint32) (*User, error) {
-
-	// To hash the password
-	err := u.BeforeSave(db)
-	if err != nil {
-		log.Fatal(err)
-	}
-	db = db.Debug().Model(&User{}).Where("id = ?", uid).Take(&User{}).UpdateColumns(
-		map[string]interface{}{
-			"password":  u.Password,
-			"nickname":  u.Nickname,
-			"email":     u.Email,
-			"update_at": time.Now(),
-		},
-	)
-	if db.Error != nil {
-		return &User{}, db.Error
-	}
-	// This is the display the updated user
-	err = db.Debug().Model(&User{}).Where("id = ?", uid).Take(&u).Error
-	if err != nil {
-		return &User{}, err
-	}
-	return u, nil
-}
-
-func (u *User) DeleteAUser(db *gorm.DB, uid uint32) (int64, error) {
-
-	db = db.Debug().Model(&User{}).Where("id = ?", uid).Take(&User{}).Delete(&User{})
-
-	if db.Error != nil {
-		return 0, db.Error
-	}
-	return db.RowsAffected, nil
 }

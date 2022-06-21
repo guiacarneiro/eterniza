@@ -1,35 +1,50 @@
 package controller
 
-//func CreateUser(w http.ResponseWriter, r *http.Request) {
-//
-//	body, err := ioutil.ReadAll(r.Body)
-//	if err != nil {
-//		util.ERROR(w, http.StatusUnprocessableEntity, err)
-//	}
-//	user := model.User{}
-//	err = json.Unmarshal(body, &user)
-//	if err != nil {
-//		util.ERROR(w, http.StatusUnprocessableEntity, err)
-//		return
-//	}
-//	user.Prepare()
-//	err = user.Validate("")
-//	if err != nil {
-//		util.ERROR(w, http.StatusUnprocessableEntity, err)
-//		return
-//	}
-//	userCreated, err := user.SaveUser(database.DB)
-//
-//	if err != nil {
-//
-//		formattedError := util.FormatError(err.Error())
-//
-//		util.ERROR(w, http.StatusInternalServerError, formattedError)
-//		return
-//	}
-//	w.Header().Set("Location", fmt.Sprintf("%s%s/%d", r.Host, r.RequestURI, userCreated.ID))
-//	util.JSON(w, http.StatusCreated, userCreated)
-//}
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/guiacarneiro/eterniza/api/request"
+	"github.com/guiacarneiro/eterniza/api/response"
+	"github.com/guiacarneiro/eterniza/api/util"
+	"github.com/guiacarneiro/eterniza/database/model"
+	"github.com/guiacarneiro/eterniza/erro"
+	"github.com/guiacarneiro/eterniza/service"
+	"net/http"
+)
+
+func CreateUser(c *gin.Context) {
+	req := request.CreateUser{}
+	if err := c.BindJSON(&req); err != nil {
+		util.ERROR(c, http.StatusBadRequest, err)
+		return
+	}
+	_, err := service.GetUsuarioLogin(req.Email)
+	if err == nil {
+		util.ERROR(c, http.StatusUnprocessableEntity, erro.ParametrosIncorretos)
+		return
+	}
+	user := model.User{
+		Nickname: req.FisrtName + " " + req.LastName,
+		Email:    req.Email,
+		Password: req.Password,
+	}
+
+	user.Prepare()
+	err = user.Validate("update")
+	if err != nil {
+		util.ERROR(c, http.StatusUnprocessableEntity, err)
+		return
+	}
+	err = user.Save()
+	if err != nil {
+		formattedError := util.FormatError(err.Error())
+		util.ERROR(c, http.StatusUnprocessableEntity, formattedError)
+		return
+	}
+	c.JSON(http.StatusOK, response.Basic{
+		Success: true,
+	})
+}
+
 //
 //func GetUsers(w http.ResponseWriter, r *http.Request) {
 //

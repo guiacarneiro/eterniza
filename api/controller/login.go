@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/guiacarneiro/eterniza/api/request"
+	"github.com/guiacarneiro/eterniza/api/response"
 	"github.com/guiacarneiro/eterniza/api/util"
 	"github.com/guiacarneiro/eterniza/database/model"
 	"github.com/guiacarneiro/eterniza/service"
@@ -33,11 +34,15 @@ func Login(c *gin.Context) {
 		util.ERROR(c, http.StatusUnprocessableEntity, formattedError)
 		return
 	}
-	c.JSON(http.StatusOK, model.LoginResponse{token})
+	c.JSON(http.StatusOK, response.Login{
+		Basic: response.Basic{
+			Success: true,
+		},
+		Token: token,
+	})
 }
 
 func SignIn(email, password string) (string, error) {
-
 	user, err := service.GetUsuarioLogin(email)
 	if err != nil {
 		return "", err
