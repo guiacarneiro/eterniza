@@ -48,14 +48,14 @@ func ListaMateriaPrima(offset int, qte int) (*[]MateriaPrima, error) {
 	return &result, err
 }
 
-func (a *MateriaPrima) Save() (*MateriaPrima, error) {
+func (a *MateriaPrima) Save() error {
 	err := database.Database.Transaction.Clauses(clause.OnConflict{
 		UpdateAll: true,
 	}).Create(&a).Error
 	if err != nil {
-		return &MateriaPrima{}, err
+		return err
 	}
-	return a, nil
+	return nil
 }
 
 func FindMateriaPrimaById(id uint) (*MateriaPrima, error) {

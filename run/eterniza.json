@@ -2,5 +2,6 @@
   "LOG_LEVEL": 4,
   "DB_TYPE": "mysql",
   "DB_STRING": "root:visualse@/eterniza?charset=utf8mb4&parseTime=True&loc=Local",
-  "SERVER": ":8081"
+  "SERVER": ":8081",
+  "TOKEN_TINY": "a50ab4f9952b0b7fa55a356b2282f10c0bea5c51"
 }

@@ -58,7 +58,7 @@ func ProcessaAPI() *gin.Engine {
 	producao.Use(util.UserAuthenticationMiddleware())
 
 	//Materia prima routes
-	//producao.POST("/materiaprima", controller.CreateMateriaPrima)
+	producao.POST("/materiaprima", controller.CreateMateriaPrima)
 	//producao.GET("/materiaprima", controller.GetMateriaPrimas)
 	//producao.GET("/materiaprima/{id}", controller.GetMateriaPrima)
 	//producao.PUT("/materiaprima/{id}", controller.UpdateMateriaPrima)

@@ -1,5 +1,44 @@
 package controller
 
+import (
+	"errors"
+	"github.com/gin-gonic/gin"
+	"github.com/guiacarneiro/eterniza/api/request"
+	"github.com/guiacarneiro/eterniza/api/response"
+	"github.com/guiacarneiro/eterniza/api/util"
+	"github.com/guiacarneiro/eterniza/database/model"
+	"net/http"
+	"strconv"
+)
+
+func CreateMateriaPrima(c *gin.Context) {
+	req := request.CreateMateriaPrima{}
+	if err := c.BindJSON(&req); err != nil {
+		util.ERROR(c, http.StatusBadRequest, err)
+		return
+	}
+	valor, err := strconv.ParseFloat(req.Value, 64)
+	if err != nil {
+		util.ERROR(c, http.StatusBadRequest, errors.New("Valor inválido"))
+		return
+	}
+	mp := model.MateriaPrima{
+		Unity: model.UnityType(req.Unity),
+		Label: req.Label,
+		Value: valor,
+	}
+
+	err = mp.Save()
+	if err != nil {
+		formattedError := util.FormatError(err.Error())
+		util.ERROR(c, http.StatusUnprocessableEntity, formattedError)
+		return
+	}
+	c.JSON(http.StatusOK, response.Basic{
+		Success: true,
+	})
+}
+
 //func CreateMateriaPrima(w http.ResponseWriter, r *http.Request) {
 //
 //	body, err := ioutil.ReadAll(r.Body)
