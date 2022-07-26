@@ -64,7 +64,7 @@ func ExtractTokenData(c *gin.Context) (*TokenData, error) {
 			uid := claims["uid"]
 			unm := claims["unm"]
 			return &TokenData{
-				UserID: uid.(uint),
+				UserID: uint(uid.(float64)),
 				Login:  unm.(string),
 			}, nil
 		}

@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"github.com/guiacarneiro/eterniza/integracao/tiny"
 	"strings"
 	"time"
 
@@ -12,11 +13,13 @@ import (
 
 type Produto struct {
 	gorm.Model
-	Referencia  string
-	Descricao   string
-	Fotos       []Foto
-	Componentes []Componente
-	Precos      []Preco
+	Referencia    string
+	Descricao     string
+	Fotos         []Foto
+	Componentes   []Componente
+	Precos        []Preco
+	ProdutoTinyID string
+	ProdutoTiny   *tiny.Produto
 }
 
 func init() {
@@ -75,6 +78,18 @@ func (p *Produto) FindProdutoByID(db *gorm.DB, uid uint32) (*Produto, error) {
 	}
 	if err == gorm.ErrRecordNotFound {
 		return &Produto{}, errors.New("Usuário não encontrado")
+	}
+	return p, err
+}
+
+func FindProdutosByIDTiny(uid string) ([]Produto, error) {
+	var p []Produto
+	err := database.Database.Transaction.Debug().Model(Produto{}).Where("produto_tiny_id = ?", uid).Take(&p).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, errors.New("Ficha não encontrada")
+		}
+		return nil, err
 	}
 	return p, err
 }

@@ -1,5 +1,53 @@
 package controller
 
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/guiacarneiro/eterniza/api/request"
+	"github.com/guiacarneiro/eterniza/api/util"
+	"github.com/guiacarneiro/eterniza/database/model"
+	"github.com/guiacarneiro/eterniza/integracao/tiny"
+	"net/http"
+)
+
+func BuscaProduto(c *gin.Context) {
+	req := tiny.RequestPesquisaProdutos{}
+	if err := c.BindJSON(&req); err != nil {
+		util.ERROR(c, http.StatusBadRequest, err)
+		return
+	}
+
+	if req.Situacao == nil {
+		ativo := "A"
+		req.Situacao = &ativo
+	}
+	resposta := tiny.ResponsePesquisaProdutos{}
+
+	err := tiny.ChamaMetodoTiny(req, &resposta, tiny.PesquisaProdutos)
+	if err != nil {
+		formattedError := util.FormatError(err.Error())
+		util.ERROR(c, http.StatusUnprocessableEntity, formattedError)
+		return
+	}
+	c.JSON(http.StatusOK, resposta)
+}
+
+func BuscaFicha(c *gin.Context) {
+	req := request.BuscaFicha{}
+	if err := c.BindJSON(&req); err != nil {
+		util.ERROR(c, http.StatusBadRequest, err)
+		return
+	}
+
+	resposta, err := model.FindProdutosByIDTiny(req.TinyID)
+	if err != nil {
+		formattedError := util.FormatError(err.Error())
+		util.ERROR(c, http.StatusUnprocessableEntity, formattedError)
+		return
+	}
+
+	c.JSON(http.StatusOK, resposta)
+}
+
 //
 //func CreateProduto(w http.ResponseWriter, r *http.Request) {
 //

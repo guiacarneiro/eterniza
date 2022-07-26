@@ -8,10 +8,10 @@ import (
 // Componente ...
 type Componente struct {
 	gorm.Model
-	Quantidade     float64 `json:"quantidade"`
-	MateriaPrimaID uint
-	MateriaPrima   *MateriaPrima
-	ProdutoID      uint
+	Quantidade     float64       `json:"quantidade,omitempty"`
+	MateriaPrimaID uint          `json:"materiaPrimaID,omitempty"`
+	MateriaPrima   *MateriaPrima `json:"materiaPrima,omitempty"`
+	ProdutoID      uint          `json:"produtoID,omitempty"`
 }
 
 func init() {

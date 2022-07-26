@@ -64,6 +64,14 @@ func ProcessaAPI() *gin.Engine {
 	//producao.PUT("/materiaprima/{id}", controller.UpdateMateriaPrima)
 	//producao.DELETE("/materiaprima/{id}", controller.DeleteMateriaPrima)
 
+	//Produto routes
+	//producao.POST("/produto", controller.CreateMateriaPrima)
+	producao.POST("/produtos", controller.BuscaProduto)
+	producao.POST("/fichas", controller.BuscaFicha)
+	//producao.GET("/materiaprima/{id}", controller.GetMateriaPrima)
+	//producao.PUT("/materiaprima/{id}", controller.UpdateMateriaPrima)
+	//producao.DELETE("/materiaprima/{id}", controller.DeleteMateriaPrima)
+
 	ginrouter.Use(static.Serve("/", BinaryFileSystem("interface")))
 	ginrouter.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
