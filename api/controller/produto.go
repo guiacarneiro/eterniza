@@ -1,11 +1,13 @@
 package controller
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/guiacarneiro/eterniza/api/request"
 	"github.com/guiacarneiro/eterniza/api/util"
 	"github.com/guiacarneiro/eterniza/database/model"
 	"github.com/guiacarneiro/eterniza/integracao/tiny"
+	"gorm.io/gorm"
 	"net/http"
 )
 
@@ -39,6 +41,44 @@ func BuscaFicha(c *gin.Context) {
 	}
 
 	resposta, err := model.FindProdutosByIDTiny(req.TinyID)
+	if err != nil {
+		formattedError := util.FormatError(err.Error())
+		util.ERROR(c, http.StatusUnprocessableEntity, formattedError)
+		return
+	}
+
+	c.JSON(http.StatusOK, resposta)
+}
+
+func SalvaFicha(c *gin.Context) {
+	req := request.SalvaFicha{}
+	if err := c.BindJSON(&req); err != nil {
+		util.ERROR(c, http.StatusBadRequest, err)
+		return
+	}
+	if len(req.Componetes) == 0 {
+		util.ERROR(c, http.StatusBadRequest, errors.New("A ficha precisa ter componentes"))
+		return
+	}
+	var fichaTecnica []model.ItemFicha
+	for _, componete := range req.Componetes {
+		item := model.ItemFicha{
+			Texto: componete,
+		}
+		fichaTecnica = append(fichaTecnica, item)
+	}
+	produto := model.Produto{
+		Model:         gorm.Model{ID: req.ID},
+		Referencia:    "",
+		Descricao:     req.Descricao,
+		Fotos:         nil,
+		Componentes:   nil,
+		FichaTecnica:  fichaTecnica,
+		Precos:        nil,
+		ProdutoTinyID: req.TinyID,
+		ProdutoTiny:   nil,
+	}
+	resposta, err := produto.Save()
 	if err != nil {
 		formattedError := util.FormatError(err.Error())
 		util.ERROR(c, http.StatusUnprocessableEntity, formattedError)

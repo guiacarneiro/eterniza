@@ -11,15 +11,22 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+type ItemFicha struct {
+	gorm.Model
+	Texto     string `json:"texto,omitempty"`
+	ProdutoID uint   `json:"produtoID,omitempty"`
+}
+
 type Produto struct {
 	gorm.Model
-	Referencia    string
-	Descricao     string
-	Fotos         []Foto
-	Componentes   []Componente
-	Precos        []Preco
-	ProdutoTinyID string
-	ProdutoTiny   *tiny.Produto
+	Referencia    string        `json:"referencia,omitempty"`
+	Descricao     string        `json:"descricao,omitempty"`
+	Fotos         []Foto        `json:"fotos,omitempty"`
+	Componentes   []Componente  `json:"componentes,omitempty"`
+	FichaTecnica  []ItemFicha   `json:"ficha,omitempty"`
+	Precos        []Preco       `json:"precos,omitempty"`
+	ProdutoTinyID string        `json:"produtoTinyID,omitempty"`
+	ProdutoTiny   *tiny.Produto `json:"produtoTiny,omitempty"`
 }
 
 func init() {
@@ -51,8 +58,8 @@ func (p *Produto) Validate(action string) error {
 	}
 }
 
-func (p *Produto) Save(db *gorm.DB) (*Produto, error) {
-	err := db.Debug().Clauses(clause.OnConflict{
+func (p *Produto) Save() (*Produto, error) {
+	err := database.Database.Transaction.Debug().Debug().Clauses(clause.OnConflict{
 		UpdateAll: true,
 	}).Create(&p).Error
 	if err != nil {
@@ -77,7 +84,7 @@ func (p *Produto) FindProdutoByID(db *gorm.DB, uid uint32) (*Produto, error) {
 		return &Produto{}, err
 	}
 	if err == gorm.ErrRecordNotFound {
-		return &Produto{}, errors.New("Usuário não encontrado")
+		return &Produto{}, errors.New("Ficha não encontrado")
 	}
 	return p, err
 }
