@@ -5,8 +5,8 @@ type BuscaFicha struct {
 }
 
 type SalvaFicha struct {
-	ID         uint     `json:"id"`
-	TinyID     string   `json:"tinyId" binding:"required"`
-	Descricao  string   `json:"descricao" binding:"required"`
-	Componetes []string `json:"componetes"`
+	ID          uint     `json:"id"`
+	TinyID      string   `json:"tinyId" binding:"required"`
+	Variacao    string   `json:"variacao" binding:"required"`
+	Componentes []string `json:"componentes" binding:"required"`
 }

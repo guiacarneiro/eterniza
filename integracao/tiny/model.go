@@ -1,7 +1,5 @@
 package tiny
 
-import "github.com/guiacarneiro/eterniza/database"
-
 type Produto struct {
 	ID               string  `json:"id"`
 	Codigo           string  `json:"codigo"`
@@ -15,8 +13,4 @@ type Produto struct {
 	TipoVariacao     string  `json:"tipoVariacao"`
 	Localizacao      string  `json:"localizacao"`
 	Situacao         string  `json:"situacao"`
-}
-
-func init() {
-	database.Migrate(&Produto{})
 }

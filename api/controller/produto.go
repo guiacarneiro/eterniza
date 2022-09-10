@@ -40,11 +40,25 @@ func BuscaFicha(c *gin.Context) {
 		return
 	}
 
-	resposta, err := model.FindProdutosByIDTiny(req.TinyID)
+	resposta, err := model.FindFichasTecnicasByIDTiny(req.TinyID)
 	if err != nil {
 		formattedError := util.FormatError(err.Error())
 		util.ERROR(c, http.StatusUnprocessableEntity, formattedError)
 		return
+	}
+
+	reqTiny := tiny.RequestObterProduto{ID: req.TinyID}
+	respostaTiny := tiny.ResponseObterProduto{}
+
+	err = tiny.ChamaMetodoTiny(reqTiny, &respostaTiny, tiny.ObterProduto)
+	if err != nil {
+		formattedError := util.FormatError(err.Error())
+		util.ERROR(c, http.StatusUnprocessableEntity, formattedError)
+		return
+	}
+
+	for i := range resposta {
+		resposta[i].ProdutoTiny = &respostaTiny.Retorno.Produto
 	}
 
 	c.JSON(http.StatusOK, resposta)
@@ -56,25 +70,22 @@ func SalvaFicha(c *gin.Context) {
 		util.ERROR(c, http.StatusBadRequest, err)
 		return
 	}
-	if len(req.Componetes) == 0 {
+	if len(req.Componentes) == 0 {
 		util.ERROR(c, http.StatusBadRequest, errors.New("A ficha precisa ter componentes"))
 		return
 	}
-	var fichaTecnica []model.ItemFicha
-	for _, componete := range req.Componetes {
+	var componentes []model.ItemFicha
+	for _, componete := range req.Componentes {
 		item := model.ItemFicha{
 			Texto: componete,
 		}
-		fichaTecnica = append(fichaTecnica, item)
+		componentes = append(componentes, item)
 	}
-	produto := model.Produto{
+	produto := model.FichaTecnica{
 		Model:         gorm.Model{ID: req.ID},
-		Referencia:    "",
-		Descricao:     req.Descricao,
+		Variacao:      req.Variacao,
 		Fotos:         nil,
-		Componentes:   nil,
-		FichaTecnica:  fichaTecnica,
-		Precos:        nil,
+		Componentes:   componentes,
 		ProdutoTinyID: req.TinyID,
 		ProdutoTiny:   nil,
 	}
@@ -95,7 +106,7 @@ func SalvaFicha(c *gin.Context) {
 //	if err != nil {
 //		util.ERROR(w, http.StatusUnprocessableEntity, err)
 //	}
-//	user := model.Produto{}
+//	user := model.Componentes{}
 //	err = json.Unmarshal(body, &user)
 //	if err != nil {
 //		util.ERROR(w, http.StatusUnprocessableEntity, err)
@@ -120,9 +131,9 @@ func SalvaFicha(c *gin.Context) {
 //
 //func GetProdutos(w http.ResponseWriter, r *http.Request) {
 //
-//	user := model.Produto{}
+//	user := model.Componentes{}
 //
-//	users, err := user.FindAllProdutos(database.DB)
+//	users, err := user.FindAllFichasTecnicas(database.DB)
 //	if err != nil {
 //		util.ERROR(w, http.StatusInternalServerError, err)
 //		return
@@ -138,8 +149,8 @@ func SalvaFicha(c *gin.Context) {
 //		util.ERROR(w, http.StatusBadRequest, err)
 //		return
 //	}
-//	user := model.Produto{}
-//	userGotten, err := user.FindProdutoByID(database.DB, uint32(uid))
+//	user := model.Componentes{}
+//	userGotten, err := user.FindFichaTecnicaByID(database.DB, uint32(uid))
 //	if err != nil {
 //		util.ERROR(w, http.StatusBadRequest, err)
 //		return
@@ -160,7 +171,7 @@ func SalvaFicha(c *gin.Context) {
 //		util.ERROR(w, http.StatusUnprocessableEntity, err)
 //		return
 //	}
-//	produto := model.Produto{}
+//	produto := model.Componentes{}
 //	produto.ID = uint(uid)
 //	err = json.Unmarshal(body, &produto)
 //	if err != nil {
@@ -191,11 +202,11 @@ func SalvaFicha(c *gin.Context) {
 //	util.JSON(w, http.StatusOK, updatedProduto)
 //}
 //
-//func DeleteProduto(w http.ResponseWriter, r *http.Request) {
+//func DeleteFichaTecnica(w http.ResponseWriter, r *http.Request) {
 //
 //	vars := mux.Vars(r)
 //
-//	user := model.Produto{}
+//	user := model.Componentes{}
 //
 //	uid, err := strconv.ParseUint(vars["id"], 10, 32)
 //	if err != nil {
@@ -211,7 +222,7 @@ func SalvaFicha(c *gin.Context) {
 //		util.ERROR(w, http.StatusUnauthorized, errors.New(http.StatusText(http.StatusUnauthorized)))
 //		return
 //	}
-//	_, err = user.DeleteProduto(database.DB, uint32(uid))
+//	_, err = user.DeleteFichaTecnica(database.DB, uint32(uid))
 //	if err != nil {
 //		util.ERROR(w, http.StatusInternalServerError, err)
 //		return

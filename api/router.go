@@ -65,7 +65,7 @@ func ProcessaAPI() *gin.Engine {
 	//producao.DELETE("/materiaprima/{id}", controller.DeleteMateriaPrima)
 
 	//Produto routes
-	producao.POST("/produto", controller.SalvaFicha)
+	producao.POST("/ficha", controller.SalvaFicha)
 	producao.POST("/produtos", controller.BuscaProduto)
 	producao.POST("/fichas", controller.BuscaFicha)
 	//producao.GET("/materiaprima/{id}", controller.GetMateriaPrima)

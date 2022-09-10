@@ -2,107 +2,100 @@ package model
 
 import (
 	"errors"
-	"github.com/guiacarneiro/eterniza/integracao/tiny"
-	"strings"
-	"time"
-
 	"github.com/guiacarneiro/eterniza/database"
+	"github.com/guiacarneiro/eterniza/integracao/tiny"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"strings"
 )
 
 type ItemFicha struct {
-	gorm.Model
-	Texto     string `json:"texto,omitempty"`
-	ProdutoID uint   `json:"produtoID,omitempty"`
+	Texto          string `json:"texto,omitempty"`
+	FichaTecnicaID uint   `json:"fichaTecnicaId,omitempty"`
 }
 
-type Produto struct {
+type FichaTecnica struct {
 	gorm.Model
-	Referencia    string        `json:"referencia,omitempty"`
-	Descricao     string        `json:"descricao,omitempty"`
+	Variacao      string        `json:"variacao,omitempty"`
 	Fotos         []Foto        `json:"fotos,omitempty"`
-	Componentes   []Componente  `json:"componentes,omitempty"`
-	FichaTecnica  []ItemFicha   `json:"ficha,omitempty"`
-	Precos        []Preco       `json:"precos,omitempty"`
+	Componentes   []ItemFicha   `json:"componentes,omitempty"`
 	ProdutoTinyID string        `json:"produtoTinyID,omitempty"`
-	ProdutoTiny   *tiny.Produto `json:"produtoTiny,omitempty"`
+	ProdutoTiny   *tiny.Produto `gorm:"-" json:"produtoTiny,omitempty"`
+}
+
+func (FichaTecnica) TableName() string {
+	return "ficha_tecnica"
+}
+
+func (ItemFicha) TableName() string {
+	return "item_ficha"
 }
 
 func init() {
-	database.Migrate(&Produto{})
+	database.Migrate(&ItemFicha{})
+	database.Migrate(&FichaTecnica{})
 }
 
-func (p *Produto) BeforeSave(tx *gorm.DB) error {
-	return nil
-}
-
-func (p *Produto) Prepare() {
-	p.ID = 0
-	p.CreatedAt = time.Now()
-	p.UpdatedAt = time.Now()
-}
-
-func (p *Produto) Validate(action string) error {
+func (p *FichaTecnica) Validate(action string) error {
 	switch strings.ToLower(action) {
 	case "update":
-		if p.Referencia == "" {
+		if p.ProdutoTinyID == "" {
 			return errors.New("Referência obrigatório")
 		}
 		return nil
 	default:
-		if p.Referencia == "" {
+		if p.ProdutoTinyID == "" {
 			return errors.New("Referência obrigatório")
 		}
 		return nil
 	}
 }
 
-func (p *Produto) Save() (*Produto, error) {
-	err := database.Database.Transaction.Debug().Debug().Clauses(clause.OnConflict{
+func (p *FichaTecnica) Save() (*FichaTecnica, error) {
+	err := database.Database.Transaction.Clauses(clause.OnConflict{
 		UpdateAll: true,
 	}).Create(&p).Error
 	if err != nil {
-		return &Produto{}, err
+		return &FichaTecnica{}, err
 	}
 	return p, nil
 }
 
-func (p *Produto) FindAllProdutos(db *gorm.DB) (*[]Produto, error) {
+func (p *FichaTecnica) FindAllFichasTecnicas(db *gorm.DB) (*[]FichaTecnica, error) {
 	var err error
-	users := []Produto{}
-	err = db.Debug().Model(&Produto{}).Limit(100).Find(&users).Error
+	users := []FichaTecnica{}
+	err = db.Debug().Model(&FichaTecnica{}).Limit(100).Find(&users).Error
 	if err != nil {
-		return &[]Produto{}, err
+		return &[]FichaTecnica{}, err
 	}
 	return &users, err
 }
 
-func (p *Produto) FindProdutoByID(db *gorm.DB, uid uint32) (*Produto, error) {
-	err := db.Debug().Model(Produto{}).Where("id = ?", uid).Take(&p).Error
+func (p *FichaTecnica) FindFichaTecnicaByID(db *gorm.DB, uid uint32) (*FichaTecnica, error) {
+	err := db.Debug().Model(FichaTecnica{}).Where("id = ?", uid).Take(&p).Error
 	if err != nil {
-		return &Produto{}, err
+		return &FichaTecnica{}, err
 	}
 	if err == gorm.ErrRecordNotFound {
-		return &Produto{}, errors.New("Ficha não encontrado")
+		return &FichaTecnica{}, errors.New("Ficha não encontrado")
 	}
 	return p, err
 }
 
-func FindProdutosByIDTiny(uid string) ([]Produto, error) {
-	var p []Produto
-	err := database.Database.Transaction.Debug().Model(Produto{}).Where("produto_tiny_id = ?", uid).Take(&p).Error
+func FindFichasTecnicasByIDTiny(uid string) ([]FichaTecnica, error) {
+	var p []FichaTecnica
+	err := database.Database.Transaction.Preload(clause.Associations).Model(FichaTecnica{}).Where("produto_tiny_id = ?", uid).Take(&p).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, errors.New("Ficha não encontrada")
+			return make([]FichaTecnica, 0), nil
 		}
 		return nil, err
 	}
 	return p, err
 }
 
-func (p *Produto) DeleteProduto(db *gorm.DB, uid uint32) (int64, error) {
-	db = db.Debug().Model(&Produto{}).Where("id = ?", uid).Take(&Produto{}).Delete(&Produto{})
+func (p *FichaTecnica) DeleteFichaTecnica(db *gorm.DB, uid uint32) (int64, error) {
+	db = db.Debug().Model(&FichaTecnica{}).Where("id = ?", uid).Take(&FichaTecnica{}).Delete(&FichaTecnica{})
 
 	if db.Error != nil {
 		return 0, db.Error

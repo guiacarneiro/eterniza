@@ -15,6 +15,7 @@ var TokenTiny string
 var encoder = schema.NewEncoder()
 
 const PesquisaProdutos = "produtos.pesquisa"
+const ObterProduto = "produto.obter"
 
 func init() {
 	TokenTiny = config.GetPropriedade("TOKEN_TINY")

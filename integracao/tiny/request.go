@@ -8,3 +8,7 @@ type RequestPesquisaProdutos struct {
 	GTIN         *string `schema:"gtin,omitempty"`
 	Situacao     *string `schema:"situacao,omitempty"`
 }
+
+type RequestObterProduto struct {
+	ID string `schema:"id,omitempty"`
+}
