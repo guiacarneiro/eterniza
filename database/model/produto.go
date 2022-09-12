@@ -52,7 +52,14 @@ func (p *FichaTecnica) Validate(action string) error {
 }
 
 func (p *FichaTecnica) Save() (*FichaTecnica, error) {
-	err := database.Database.Transaction.Clauses(clause.OnConflict{
+	var err error
+	if p.ID != 0 {
+		err = database.Database.Transaction.Where("ficha_tecnica_id = ?", p.ID).Delete(&ItemFicha{}).Error
+	}
+	if err != nil {
+		return &FichaTecnica{}, err
+	}
+	err = database.Database.Transaction.Clauses(clause.OnConflict{
 		UpdateAll: true,
 	}).Create(&p).Error
 	if err != nil {
@@ -84,7 +91,7 @@ func (p *FichaTecnica) FindFichaTecnicaByID(db *gorm.DB, uid uint32) (*FichaTecn
 
 func FindFichasTecnicasByIDTiny(uid string) ([]FichaTecnica, error) {
 	var p []FichaTecnica
-	err := database.Database.Transaction.Preload(clause.Associations).Model(FichaTecnica{}).Where("produto_tiny_id = ?", uid).Take(&p).Error
+	err := database.Database.Transaction.Preload(clause.Associations).Model(FichaTecnica{}).Where("produto_tiny_id = ?", uid).Find(&p).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return make([]FichaTecnica, 0), nil
