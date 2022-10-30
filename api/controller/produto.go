@@ -9,6 +9,7 @@ import (
 	"github.com/guiacarneiro/eterniza/integracao/tiny"
 	"gorm.io/gorm"
 	"net/http"
+	"strconv"
 )
 
 func BuscaProduto(c *gin.Context) {
@@ -84,12 +85,34 @@ func SalvaFicha(c *gin.Context) {
 	produto := model.FichaTecnica{
 		Model:         gorm.Model{ID: req.ID},
 		Variacao:      req.Variacao,
-		Fotos:         nil,
+		Foto:          req.Foto,
 		Componentes:   componentes,
 		ProdutoTinyID: req.TinyID,
 		ProdutoTiny:   nil,
 	}
 	resposta, err := produto.Save()
+	if err != nil {
+		formattedError := util.FormatError(err.Error())
+		util.ERROR(c, http.StatusUnprocessableEntity, formattedError)
+		return
+	}
+
+	c.JSON(http.StatusOK, resposta)
+}
+
+func ApagaFicha(c *gin.Context) {
+	uid, valido := c.Params.Get("id")
+	if !valido {
+		util.ERROR(c, http.StatusUnprocessableEntity, errors.New("Ficha não encontrada"))
+		return
+	}
+	id, err := strconv.Atoi(uid)
+	if err != nil {
+		formattedError := util.FormatError(err.Error())
+		util.ERROR(c, http.StatusUnprocessableEntity, formattedError)
+		return
+	}
+	resposta, err := model.DeleteFichaTecnica(uint(id))
 	if err != nil {
 		formattedError := util.FormatError(err.Error())
 		util.ERROR(c, http.StatusUnprocessableEntity, formattedError)

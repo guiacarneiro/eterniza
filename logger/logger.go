@@ -70,7 +70,7 @@ func GetPathLog() string {
 
 func init() {
 	Inicializa(config.GetPropriedadeInt("LOG_LEVEL"),
-		GetPathLog(), "siganet3go", config.Versao)
+		GetPathLog(), "eterniza", config.Versao)
 	logFatal := GetPathLog() + "/fatal.log"
 	f, err := os.OpenFile(logFatal, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0640)
 	if err != nil {

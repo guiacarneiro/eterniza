@@ -70,7 +70,7 @@ func ProcessaAPI() *gin.Engine {
 	producao.POST("/fichas", controller.BuscaFicha)
 	//producao.GET("/materiaprima/{id}", controller.GetMateriaPrima)
 	//producao.PUT("/materiaprima/{id}", controller.UpdateMateriaPrima)
-	//producao.DELETE("/materiaprima/{id}", controller.DeleteMateriaPrima)
+	producao.DELETE("/ficha/:id", controller.ApagaFicha)
 
 	ginrouter.Use(static.Serve("/", BinaryFileSystem("interface")))
 	ginrouter.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

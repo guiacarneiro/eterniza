@@ -17,7 +17,7 @@ type ItemFicha struct {
 type FichaTecnica struct {
 	gorm.Model
 	Variacao      string        `json:"variacao,omitempty"`
-	Fotos         []Foto        `json:"fotos,omitempty"`
+	Foto          *string       `json:"foto,omitempty"`
 	Componentes   []ItemFicha   `json:"componentes,omitempty"`
 	ProdutoTinyID string        `json:"produtoTinyID,omitempty"`
 	ProdutoTiny   *tiny.Produto `gorm:"-" json:"produtoTiny,omitempty"`
@@ -101,11 +101,16 @@ func FindFichasTecnicasByIDTiny(uid string) ([]FichaTecnica, error) {
 	return p, err
 }
 
-func (p *FichaTecnica) DeleteFichaTecnica(db *gorm.DB, uid uint32) (int64, error) {
-	db = db.Debug().Model(&FichaTecnica{}).Where("id = ?", uid).Take(&FichaTecnica{}).Delete(&FichaTecnica{})
-
-	if db.Error != nil {
-		return 0, db.Error
+func DeleteFichaTecnica(uid uint) (int64, error) {
+	err := database.Database.Transaction.Where("ficha_tecnica_id = ?", uid).Delete(&ItemFicha{}).Error
+	if err != nil {
+		return 0, err
 	}
-	return db.RowsAffected, nil
+
+	err = database.Database.Transaction.Where("id = ?", uid).Delete(&FichaTecnica{}).Error
+
+	if err != nil {
+		return 0, err
+	}
+	return database.Database.Transaction.RowsAffected, nil
 }

@@ -5,7 +5,7 @@ import (
 )
 
 type Foto struct {
-	url            string
+	Base64         string
 	FichaTecnicaID uint
 }
 

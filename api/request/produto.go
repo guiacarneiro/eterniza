@@ -9,4 +9,9 @@ type SalvaFicha struct {
 	TinyID      string   `json:"tinyId" binding:"required"`
 	Variacao    string   `json:"variacao" binding:"required"`
 	Componentes []string `json:"componentes" binding:"required"`
+	Foto        *string  `json:"foto"`
+}
+
+type ApagaFicha struct {
+	ID uint `json:"id"`
 }
